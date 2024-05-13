@@ -1,0 +1,34 @@
+# Binaries for programs and plugins
+.DS_Store
+*~
+
+eth-tx-parser
+
+# Output of tools: coverage tool, editor ...
+*.swp
+*.vim
+.vim_bookmarks
+*.out
+.vscode
+.idea
+output
+
+# Test binary, built with `go test -c`
+*.test
+*.cover
+
+# Logs
+/logs
+/log
+*.log
+
+# Dependency directories
+vendor/
+
+# ignore kitex_gen
+kitex_gen/
+mocktest/
+
+#ignore mocks
+mock*.go
+!mockdb.go
