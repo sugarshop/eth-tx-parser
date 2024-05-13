@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/sugarshop/eth-tx-parser/service"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sugarshop/eth-tx-parser/handler"
 	"github.com/sugarshop/eth-tx-parser/mw"
+	"github.com/sugarshop/eth-tx-parser/remote"
+	"github.com/sugarshop/eth-tx-parser/service"
 )
 
 func main()  {
@@ -43,5 +44,6 @@ func main()  {
 }
 
 func Init()  {
+	remote.Init()
 	service.Init()
 }
