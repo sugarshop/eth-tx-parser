@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,7 +46,7 @@ func ETHServiceInstance() *ETHService {
 			// parse tx into inbount/outbound.
 			for range time.Tick(1 * time.Second) {
 				if err := eTHServiceInstance.load(ctx); err != nil {
-					log.Println(ctx, "[ETHServiceInstance]: eTHServiceInstance load err: %v", err)
+					log.Println(ctx, "[ETHServiceInstance]: eTHServiceInstance load err: ", err)
 				}
 			}
 		}()
@@ -55,7 +56,7 @@ func ETHServiceInstance() *ETHService {
 }
 
 // GetCurrentBlock get current block.
-func (s *ETHService) GetCurrentBlock(ctx context.Context) (interface{}, error) {
+func (s *ETHService) GetCurrentBlock(ctx context.Context) (*model.ETHBlockInfo, error) {
 	num, err := remote.RPCServiceInstance().EthBlockNumber(ctx)
 	if err != nil {
 		log.Println(ctx, "[GetCurrentBlock]: Error EthBlockNumber, err: ", err)
@@ -71,6 +72,7 @@ func (s *ETHService) GetCurrentBlock(ctx context.Context) (interface{}, error) {
 
 // Subscribe subscribe an address's inbound/outbound transaction.
 func (s *ETHService) Subscribe(ctx context.Context, address string) error {
+	address = strings.ToLower(address)
 	s.addrRWMutex.Lock()
 	s.subAddrs[address] = true
 	s.addrRWMutex.Unlock()
@@ -79,6 +81,7 @@ func (s *ETHService) Subscribe(ctx context.Context, address string) error {
 
 // GetTransactions get address's inbound/outbound transactions
 func (s *ETHService) GetTransactions(ctx context.Context, address string) ([]*model.ETHTransaction, error) {
+	address = strings.ToLower(address)
 	s.txRWMutex.RLock()
 	transactions, ok := s.transactions[address]
 	if !ok {

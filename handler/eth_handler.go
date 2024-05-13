@@ -6,6 +6,7 @@ import (
 	"github.com/sugarshop/eth-tx-parser/service"
 	"github.com/sugarshop/eth-tx-parser/util"
 	"log"
+	"strings"
 )
 
 type ETHHandler struct {
@@ -42,7 +43,7 @@ func (eth *ETHHandler) Subscribe(c *gin.Context) (interface{}, error) {
 		log.Println(ctx, "[Subscribe]: parse address param err")
 		return nil, errors.New("parse address param err")
 	}
-	if err := service.ETHServiceInstance().Subscribe(ctx, address); err != nil {
+	if err := service.ETHServiceInstance().Subscribe(ctx, strings.ToLower(address)); err != nil {
 		log.Println(ctx, "[Subscribe]: Subscribe err: ", err)
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func (eth *ETHHandler) GetTransactions(c *gin.Context) (interface{}, error) {
 		log.Println(ctx, "[GetTransactions]: parse address param err")
 		return nil, errors.New("parse address param err")
 	}
-	transactions, err := service.ETHServiceInstance().GetTransactions(ctx, address)
+	transactions, err := service.ETHServiceInstance().GetTransactions(ctx, strings.ToLower(address))
 	if err != nil {
 		log.Println(ctx, "[GetTransactions]: GetTransactions err: ", err)
 		return nil, err

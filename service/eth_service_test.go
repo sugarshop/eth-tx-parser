@@ -2,22 +2,26 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/tj/assert"
+	"strings"
 	"testing"
 )
 
 func TestETHService_GetCurrentBlock(t *testing.T) {
 	ctx := context.Background()
-	blockInfo, err := ETHServiceInstance().GetCurrentBlock(ctx)
+	instance := ETHServiceInstance()
+	blockInfo, err := instance.GetCurrentBlock(ctx)
 	assert.Nil(t, err)
 	assert.NotNil(t, blockInfo)
+	assert.Equal(t, fmt.Sprintf("0x%x", instance.recentBlockNumer), blockInfo.Number)
 }
 
 func TestETHService_Subscribe(t *testing.T) {
 	ctx := context.Background()
 	address := "0x76759058b7a242A86a0367729FAe98803d86891B"
 	ETHServiceInstance().Subscribe(ctx, address)
-	_, ok := ETHServiceInstance().subAddrs[address]
+	_, ok := ETHServiceInstance().subAddrs[strings.ToLower(address)]
 	assert.Equal(t, ok, true)
 }
 
@@ -48,7 +52,7 @@ func TestETHService_GetTransactions(t *testing.T) {
 		assert.Equal(t, len(list), txCase.txNum)
 		for _, tx := range list {
 			assert.Condition(t, func() (success bool) {
-				return (tx.From == txCase.Addr) || (tx.To == txCase.Addr)
+				return (strings.EqualFold(tx.From, txCase.Addr)) || (strings.EqualFold(tx.To, txCase.Addr))
 			})
 		}
 	}
