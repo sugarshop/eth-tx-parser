@@ -1,6 +1,11 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/sugarshop/eth-tx-parser/service"
+	"github.com/sugarshop/eth-tx-parser/util"
+	"log"
+)
 
 type ETHHandler struct {
 
@@ -19,7 +24,13 @@ func (eth *ETHHandler) Register(e *gin.Engine) {
 
 // GetCurrentBlock get last parsed block.
 func (eth *ETHHandler) GetCurrentBlock(c *gin.Context) (interface{}, error) {
-	return nil, nil
+	ctx := util.RPCContext(c)
+	blockInfo, err := service.ETHServiceInstance().GetCurrentBlock(ctx)
+	if err != nil {
+		log.Println("[GetCurrentBlock]: GetCurrentBlock err: ", err)
+		return nil, err
+	}
+	return blockInfo, nil
 }
 
 // Subscribe subscribe address to server.
