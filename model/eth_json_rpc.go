@@ -21,7 +21,7 @@ type ETHBlockNumberResponse struct {
 type ETHGetBlockByNumberResponse struct {
 	JSONRPC string `json:"jsonrpc"`
 	ID      int    `json:"id"`
-	Result  ETHBlockInfo `json:"result"`
+	Result  *ETHBlockInfo `json:"result"`
 }
 
 type ETHTransaction struct {
@@ -69,10 +69,10 @@ type ETHBlockInfo struct {
 	StateRoot             string `json:"stateRoot"`
 	Timestamp             string `json:"timestamp"`
 	TotalDifficulty       string `json:"totalDifficulty"`
-	Transactions          []ETHTransaction `json:"transactions"`
+	Transactions          []*ETHTransaction `json:"transactions"`
 	TransactionsRoot string        `json:"transactionsRoot"`
 	Uncles           []interface{} `json:"uncles"`
-	Withdrawals      []ETHWithdraw `json:"withdrawals"`
+	Withdrawals      []*ETHWithdraw `json:"withdrawals"`
 	WithdrawalsRoot string `json:"withdrawalsRoot"`
 }
 
