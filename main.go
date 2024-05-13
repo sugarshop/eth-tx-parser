@@ -1,22 +1,27 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/sugarshop/eth-tx-parser/handler"
+	"github.com/sugarshop/eth-tx-parser/service"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sugarshop/eth-tx-parser/handler"
+	"github.com/sugarshop/eth-tx-parser/mw"
 )
 
 func main()  {
 	engine := gin.New()
+	engine.Use(mw.ParseFormMiddleware)
 	engine.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
 
+	Init()
 	// register other api
 	handler.Register(engine)
 
@@ -35,4 +40,8 @@ func main()  {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+}
+
+func Init()  {
+	service.Init()
 }

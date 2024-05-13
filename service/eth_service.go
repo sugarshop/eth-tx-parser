@@ -110,7 +110,7 @@ func (s *ETHService) load(ctx context.Context) error {
 
 // ParseTransactions parse block transactions.
 func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error {
-	hexStr := fmt.Sprintf("%x", number)
+	hexStr := fmt.Sprintf("0x%x", number)
 	blockInfo, err := s.EthGetBlockByNumber(ctx, hexStr)
 	if err != nil {
 		log.Println("[ParseTransactions]: Error EthGetBlockByNumber request:", err)

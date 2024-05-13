@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sugarshop/eth-tx-parser/service"
 	"github.com/sugarshop/eth-tx-parser/util"
@@ -35,7 +36,17 @@ func (eth *ETHHandler) GetCurrentBlock(c *gin.Context) (interface{}, error) {
 
 // Subscribe subscribe address to server.
 func (eth *ETHHandler) Subscribe(c *gin.Context) (interface{}, error) {
-	return nil, nil
+	ctx := util.RPCContext(c)
+	address := c.Request.Form.Get("address")
+	if len(address) == 0 {
+		log.Println(ctx, "[Subscribe]: parse address param err")
+		return nil, errors.New("parse address param err")
+	}
+	if err := service.ETHServiceInstance().Subscribe(ctx, address); err != nil {
+		log.Println(ctx, "[Subscribe]: Subscribe err: ", err)
+		return nil, err
+	}
+	return map[string]interface{}{}, nil
 }
 
 // GetTransactions list of inbound or outbound transactions for an address.
