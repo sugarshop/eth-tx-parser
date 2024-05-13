@@ -98,7 +98,7 @@ func (s *ETHService) load(ctx context.Context) error {
 	// 1. query new block number.
 	num, err := s.ETHBlockDecimalNumber(ctx)
 	if err != nil {
-		log.Println("[load]: Error EthBlockNumber request:", err)
+		log.Println(ctx, "[load]: Error EthBlockNumber request:", err)
 		return err
 	}
 	// 2. compare, if no new block, return
@@ -108,10 +108,11 @@ func (s *ETHService) load(ctx context.Context) error {
 	}
 	// 3. update block number.
 	s.recentBlockNumer = num
+	log.Println(ctx, "[ETHService]: Block Number:", num)
 	// 4. parse block transactions.
 	err = s.ParseTransactions(ctx, num)
 	if err != nil {
-		log.Println("[load]: Error ParseTransactions request:", err)
+		log.Println(ctx, "[load]: Error ParseTransactions request:", err)
 		return err
 	}
 	return nil
@@ -122,7 +123,7 @@ func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error 
 	hexStr := fmt.Sprintf("0x%x", number)
 	blockInfo, err := s.EthGetBlockByNumber(ctx, hexStr)
 	if err != nil {
-		log.Println("[ParseTransactions]: Error EthGetBlockByNumber request:", err)
+		log.Println(ctx, "[ParseTransactions]: Error EthGetBlockByNumber request:", err)
 		return err
 	}
 	transactions := blockInfo.Transactions
@@ -158,11 +159,11 @@ func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error 
 func (s *ETHService) ETHBlockDecimalNumber(ctx context.Context) (int64, error) {
 	hexStr, err := s.EthBlockNumber(ctx)
 	if err != nil {
-		log.Println("[ETHBlockDecimalNumber]: Error EthBlockNumber request:", err)
+		log.Println(ctx, "[ETHBlockDecimalNumber]: Error EthBlockNumber request:", err)
 		return 0, err
 	}
 	if len(hexStr) == 0 {
-		log.Println("[ETHBlockDecimalNumber]: Error EthBlockNumber request, hexStr length is 0")
+		log.Println(ctx, "[ETHBlockDecimalNumber]: Error EthBlockNumber request, hexStr length is 0")
 		return 0, errors.New("hexStr length is 0")
 	}
 	// Convert hexadecimal string to decimal integer
@@ -185,7 +186,7 @@ func (s *ETHService) EthBlockNumber(ctx context.Context) (string, error) {
 
 	body, err := s.httpJsonRPCPOST(ctx, request)
 	if err != nil {
-		log.Println("[EthBlockNumber]: Error httpJsonRPCPOST request:", err)
+		log.Println(ctx, "[EthBlockNumber]: Error httpJsonRPCPOST request:", err)
 		return "", err
 	}
 
@@ -211,7 +212,7 @@ func (s *ETHService) EthGetBlockByNumber(ctx context.Context, number string) (*m
 
 	body, err := s.httpJsonRPCPOST(ctx, request)
 	if err != nil {
-		fmt.Println("[EthGetBlockByNumber]: Error httpJsonRPCPOST request:", err)
+		log.Println(ctx, "[EthGetBlockByNumber]: Error httpJsonRPCPOST request:", err)
 		return nil, err
 	}
 	resp := &model.ETHGetBlockByNumberResponse{}
@@ -221,13 +222,18 @@ func (s *ETHService) EthGetBlockByNumber(ctx context.Context, number string) (*m
 		return nil, err
 	}
 	blockInfo := resp.Result
+	// TODO: if jsonrpc return nil result, retry it.
+	if blockInfo == nil {
+		log.Println(ctx, "[EthGetBlockByNumber]: empty blockInfo, should retry")
+		return nil, errors.New("empty blockInfo")
+	}
 	return blockInfo, nil
 }
 
 func (s *ETHService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPCRequest) ([]byte, error) {
 	jsonData, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println("[httpJsonRPCPOST]: Error marshaling request:", err)
+		log.Println(ctx, "[httpJsonRPCPOST]: Error marshaling request:", err)
 		return nil, err
 	}
 
@@ -235,7 +241,7 @@ func (s *ETHService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPC
 	url := model.ETHJsonRpcUrl
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		fmt.Println("[httpJsonRPCPOST]: Error creating request:", err)
+		log.Println(ctx, "[httpJsonRPCPOST]: Error creating request:", err)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -244,7 +250,7 @@ func (s *ETHService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPC
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("[httpJsonRPCPOST]: Error sending request:", err)
+		log.Println(ctx, "[httpJsonRPCPOST]: Error sending request:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -252,7 +258,7 @@ func (s *ETHService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPC
 	// read resp data.
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("[httpJsonRPCPOST]: Error reading response:", err)
+		log.Println(ctx, "[httpJsonRPCPOST]: Error reading response:", err)
 		return nil, err
 	}
 
