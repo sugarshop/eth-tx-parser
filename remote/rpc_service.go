@@ -100,7 +100,7 @@ func (s *RPCService) EthGetBlockByNumber(ctx context.Context, number string) (*m
 	blockInfo := resp.Result
 	// TODO: if jsonrpc return nil result, retry it.
 	if blockInfo == nil {
-		log.Println(ctx, "[EthGetBlockByNumber]: empty blockInfo, should retry")
+		log.Println(ctx, "[EthGetBlockByNumber]: empty blockInfo, should retry, block number ", number)
 		return nil, errors.New("empty blockInfo")
 	}
 	return blockInfo, nil
