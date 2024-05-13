@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,9 +19,10 @@ import (
 // ETHService ETH Transactions data parser service.
 type ETHService struct {
 	recentBlockNumer int64 // the most recent block number I have ever oberve.
-	subAddrs sync.Map
-	inboundTx sync.Map
-	outboundTx sync.Map
+	addrRWMutex sync.RWMutex
+	subAddrs map[string]bool
+	txRWMutex sync.RWMutex
+	transactions map[string][]*model.ETHTransaction
 }
 
 var (
@@ -32,9 +34,8 @@ var (
 func ETHServiceInstance() *ETHService {
 	eTHServiceOnce.Do(func() {
 		eTHServiceInstance = &ETHService{
-			subAddrs:   sync.Map{},
-			inboundTx:  sync.Map{},
-			outboundTx: sync.Map{},
+			subAddrs:   map[string]bool{},
+			transactions:  map[string][]*model.ETHTransaction{},
 		}
 		ctx := context.Background()
 		dec, err := eTHServiceInstance.ETHBlockDecimalNumber(ctx)
@@ -75,13 +76,21 @@ func (s *ETHService) GetCurrentBlock(ctx context.Context) (interface{}, error) {
 
 // Subscribe subscribe an address's inbound/outbound transaction.
 func (s *ETHService) Subscribe(ctx context.Context, address string) error {
-	s.subAddrs.Store(address, true)
+	s.addrRWMutex.Lock()
+	s.subAddrs[address] = true
+	s.addrRWMutex.Unlock()
 	return nil
 }
 
 // GetTransactions get address's inbound/outbound transactions
-func (s *ETHService) GetTransactions(ctx context.Context, address string) (interface{}, error) {
-	return nil, nil
+func (s *ETHService) GetTransactions(ctx context.Context, address string) ([]*model.ETHTransaction, error) {
+	s.txRWMutex.RLock()
+	transactions, ok := s.transactions[address]
+	if !ok {
+		transactions = make([]*model.ETHTransaction, 0)
+	}
+	s.txRWMutex.RUnlock()
+	return transactions, nil
 }
 
 // load load transactions via address.
@@ -119,14 +128,28 @@ func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error 
 	transactions := blockInfo.Transactions
 	for _, tx := range transactions {
 		// if a key exists in map, store it.
-		if _, ok := s.subAddrs.Load(tx.From);ok {
+		s.addrRWMutex.RLock()
+		s.txRWMutex.Lock()
+		if _, ok := s.subAddrs[tx.From]; ok {
 			// outboundTx: From -> To
-			s.outboundTx.Store(tx.From, tx)
+			if txList, okk := s.transactions[tx.From]; okk {
+				txList = append(txList, tx)
+				s.transactions[tx.From] = txList
+			} else {
+				s.transactions[tx.From] = []*model.ETHTransaction{tx}
+			}
 		}
-		if _, ok := s.subAddrs.Load(tx.To);ok {
+		if _, ok := s.subAddrs[tx.To]; ok {
 			// inboundTx: From -> To
-			s.inboundTx.Store(tx.To, tx)
+			if txList, okk := s.transactions[tx.To]; okk {
+				txList = append(txList, tx)
+				s.transactions[tx.To] = txList
+			} else {
+				s.transactions[tx.To] = []*model.ETHTransaction{tx}
+			}
 		}
+		s.addrRWMutex.RUnlock()
+		s.txRWMutex.Unlock()
 	}
 	return nil
 }
@@ -135,8 +158,12 @@ func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error 
 func (s *ETHService) ETHBlockDecimalNumber(ctx context.Context) (int64, error) {
 	hexStr, err := s.EthBlockNumber(ctx)
 	if err != nil {
-		log.Println("[ETHBlockDecimalNumber]: Error httpJsonRPCPOST request:", err)
+		log.Println("[ETHBlockDecimalNumber]: Error EthBlockNumber request:", err)
 		return 0, err
+	}
+	if len(hexStr) == 0 {
+		log.Println("[ETHBlockDecimalNumber]: Error EthBlockNumber request, hexStr length is 0")
+		return 0, errors.New("hexStr length is 0")
 	}
 	// Convert hexadecimal string to decimal integer
 	dec, err := strconv.ParseInt(hexStr[2:], 16, 64)
@@ -193,7 +220,7 @@ func (s *ETHService) EthGetBlockByNumber(ctx context.Context, number string) (*m
 		log.Println(ctx, "[EthGetBlockByNumber]: Error Unmarshal, err: ", err)
 		return nil, err
 	}
-	blockInfo := &resp.Result
+	blockInfo := resp.Result
 	return blockInfo, nil
 }
 

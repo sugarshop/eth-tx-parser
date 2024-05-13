@@ -51,5 +51,18 @@ func (eth *ETHHandler) Subscribe(c *gin.Context) (interface{}, error) {
 
 // GetTransactions list of inbound or outbound transactions for an address.
 func (eth *ETHHandler) GetTransactions(c *gin.Context) (interface{}, error) {
-	return nil, nil
+	ctx := util.RPCContext(c)
+	address := c.Request.Form.Get("address")
+	if len(address) == 0 {
+		log.Println(ctx, "[GetTransactions]: parse address param err")
+		return nil, errors.New("parse address param err")
+	}
+	transactions, err := service.ETHServiceInstance().GetTransactions(ctx, address)
+	if err != nil {
+		log.Println(ctx, "[GetTransactions]: GetTransactions err: ", err)
+		return nil, err
+	}
+	return map[string]interface{} {
+		"transactions": transactions,
+	}, nil
 }
