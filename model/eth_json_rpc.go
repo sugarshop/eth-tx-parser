@@ -1,6 +1,7 @@
 package model
 
-const ETHJsonRpcUrl = "https://eth.public-rpc.com"
+// ETHJsonRpcUrl todo: fill in your API KEY
+const ETHJsonRpcUrl = "https://mainnet.infura.io/v3/YOUR-API-KEY"
 
 // JSONRPCRequest represents the structure of the JSON-RPC request
 type JSONRPCRequest struct {
