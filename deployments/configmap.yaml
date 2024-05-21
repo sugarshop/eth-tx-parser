@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: token-gateway-conf
+data:
+  config.json: |
+    {
+        "ENV": "test"
+    }

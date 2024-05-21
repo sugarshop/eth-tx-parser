@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: token-gateway-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: cxlinks.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: token-gateway-svc
+                port:
+                  number: 8080

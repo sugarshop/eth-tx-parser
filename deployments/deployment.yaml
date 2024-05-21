@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-gateway
+  labels:
+    app: token-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-gateway
+  template:
+    metadata:
+      labels:
+        app: token-gateway
+    spec:
+      containers:
+        - name: token-gateway
+          command:
+            - /app/bootstrap.sh
+            - --conf=/app/config/config.json
+          image: registry.digitalocean.com/francisco/token-gateway:20240521213407
+          resources: {}
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: token-gateway-config
+              mountPath: /app/config
+      volumes:
+        - name: token-gateway-config
+          configMap:
+            name: token-gateway-conf
