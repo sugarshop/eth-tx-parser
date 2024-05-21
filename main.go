@@ -1,19 +1,29 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sugarshop/eth-tx-parser/handler"
-	"github.com/sugarshop/eth-tx-parser/mw"
-	"github.com/sugarshop/eth-tx-parser/remote"
-	"github.com/sugarshop/eth-tx-parser/service"
+	"github.com/sugarshop/env"
+	"github.com/sugarshop/token-gateway/handler"
+	"github.com/sugarshop/token-gateway/mw"
+	"github.com/sugarshop/token-gateway/remote"
+	"github.com/sugarshop/token-gateway/service"
 )
 
-func main()  {
+func main() {
+	// start config
+	var conf string
+	flag.StringVar(&conf, "conf", "conf/test.json", "specify the load config file")
+	flag.Parse()
+
+	// load env configuration
+	env.LoadGlobalEnv(conf)
+
 	engine := gin.New()
 	engine.Use(mw.ParseFormMiddleware)
 	engine.GET("/ping", func(c *gin.Context) {
