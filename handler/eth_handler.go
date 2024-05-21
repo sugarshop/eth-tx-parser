@@ -3,8 +3,8 @@ package handler
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/sugarshop/eth-tx-parser/service"
-	"github.com/sugarshop/eth-tx-parser/util"
+	"github.com/sugarshop/token-gateway/service"
+	"github.com/sugarshop/token-gateway/util"
 	"log"
 	"strings"
 )

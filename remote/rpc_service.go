@@ -11,28 +11,38 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/sugarshop/eth-tx-parser/model"
+	"github.com/sugarshop/env"
+	"github.com/sugarshop/token-gateway/model"
 )
 
-// RPCService ETH RPC service.
-type RPCService struct {}
+// ETHRPCService ETH RPC service.
+type ETHRPCService struct {
+	ethJsonRPCURL string
+}
 
 var (
-	rPCServiceInstance *RPCService
-	rPCServiceOnce sync.Once
+	ethRPCServiceInstance *ETHRPCService
+	ethRPCServiceOnce     sync.Once
 )
 
-// RPCServiceInstance RPCService singleton
-func RPCServiceInstance() *RPCService {
-	rPCServiceOnce.Do(func() {
-		rPCServiceInstance = &RPCService{}
+// ETHRPCServiceInstance ETHRPCService singleton
+func ETHRPCServiceInstance() *ETHRPCService {
+	url, ok := env.GlobalEnv().Get("ETHJSONRPCURL")
+	if !ok {
+		panic("no ETHJSONRPCURL env set")
+	}
+
+	ethRPCServiceOnce.Do(func() {
+		ethRPCServiceInstance = &ETHRPCService{
+			ethJsonRPCURL: url,
+		}
 	})
 
-	return rPCServiceInstance
+	return ethRPCServiceInstance
 }
 
 // ETHBlockDecimalNumber return the decimal number of the most recent block.
-func (s *RPCService) ETHBlockDecimalNumber(ctx context.Context) (int64, error) {
+func (s *ETHRPCService) ETHBlockDecimalNumber(ctx context.Context) (int64, error) {
 	hexStr, err := s.EthBlockNumber(ctx)
 	if err != nil {
 		log.Println(ctx, "[ETHBlockDecimalNumber]: Error EthBlockNumber request:", err)
@@ -52,7 +62,7 @@ func (s *RPCService) ETHBlockDecimalNumber(ctx context.Context) (int64, error) {
 }
 
 // EthBlockNumber returns the number of the most recent block.
-func (s *RPCService) EthBlockNumber(ctx context.Context) (string, error) {
+func (s *ETHRPCService) EthBlockNumber(ctx context.Context) (string, error) {
 	request := &model.JSONRPCRequest{
 		JSONRPC: "2.0",
 		Method:  "eth_blockNumber",
@@ -78,7 +88,7 @@ func (s *RPCService) EthBlockNumber(ctx context.Context) (string, error) {
 }
 
 // EthGetBlockByNumber returns information about a block by number.
-func (s *RPCService) EthGetBlockByNumber(ctx context.Context, number string) (*model.ETHBlockInfo, error) {
+func (s *ETHRPCService) EthGetBlockByNumber(ctx context.Context, number string) (*model.ETHBlockInfo, error) {
 	request := &model.JSONRPCRequest{
 		JSONRPC: "2.0",
 		Method:  "eth_getBlockByNumber",
@@ -106,7 +116,7 @@ func (s *RPCService) EthGetBlockByNumber(ctx context.Context, number string) (*m
 	return blockInfo, nil
 }
 
-func (s *RPCService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPCRequest) ([]byte, error) {
+func (s *ETHRPCService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPCRequest) ([]byte, error) {
 	jsonData, err := json.Marshal(request)
 	if err != nil {
 		log.Println(ctx, "[httpJsonRPCPOST]: Error marshaling request:", err)
@@ -114,8 +124,7 @@ func (s *RPCService) httpJsonRPCPOST(ctx context.Context, request *model.JSONRPC
 	}
 
 	// create HTTP POST request
-	url := model.ETHJsonRpcUrl
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", s.ethJsonRPCURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println(ctx, "[httpJsonRPCPOST]: Error creating request:", err)
 		return nil, err

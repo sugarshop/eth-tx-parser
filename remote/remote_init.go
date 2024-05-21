@@ -1,5 +1,5 @@
 package remote
 
 func Init()  {
-	RPCServiceInstance()
+	ETHRPCServiceInstance()
 }

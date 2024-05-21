@@ -2,7 +2,7 @@
 .DS_Store
 *~
 
-eth-tx-parser
+token-gateway
 
 # Output of tools: coverage tool, editor ...
 *.swp

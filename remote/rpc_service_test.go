@@ -9,7 +9,7 @@ import (
 
 func TestRPCService_EthBlockNumber(t *testing.T) {
 	ctx := context.Background()
-	hexStr, err := RPCServiceInstance().EthBlockNumber(ctx)
+	hexStr, err := ETHRPCServiceInstance().EthBlockNumber(ctx)
 	assert.Nil(t, err)
 	assert.NotEqual(t, hexStr, "")
 	assert.Condition(t, func() (success bool) {
@@ -19,10 +19,10 @@ func TestRPCService_EthBlockNumber(t *testing.T) {
 
 func TestRPCService_EthGetBlockByNumber(t *testing.T) {
 	ctx := context.Background()
-	hexStr, err := RPCServiceInstance().EthBlockNumber(ctx)
+	hexStr, err := ETHRPCServiceInstance().EthBlockNumber(ctx)
 	assert.Nil(t, err)
 	assert.NotEqual(t, hexStr, "")
-	resp, err := RPCServiceInstance().EthGetBlockByNumber(ctx, hexStr)
+	resp, err := ETHRPCServiceInstance().EthGetBlockByNumber(ctx, hexStr)
 	assert.Nil(t, err)
 	assert.NotNil(t, resp)
 	assert.Equal(t, resp.Number, hexStr)
@@ -30,7 +30,7 @@ func TestRPCService_EthGetBlockByNumber(t *testing.T) {
 
 func TestRPCService_ETHBlockDecimalNumber(t *testing.T) {
 	ctx := context.Background()
-	hexStr, err := RPCServiceInstance().ETHBlockDecimalNumber(ctx)
+	hexStr, err := ETHRPCServiceInstance().ETHBlockDecimalNumber(ctx)
 	assert.Nil(t, err)
 	assert.NotNil(t, hexStr, 0)
 }

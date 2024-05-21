@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sugarshop/eth-tx-parser/model"
+	"github.com/sugarshop/token-gateway/model"
 	"net/http"
 )
 

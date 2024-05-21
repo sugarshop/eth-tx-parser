@@ -6,7 +6,7 @@ import (
 
 	"bytes"
 	"github.com/gin-gonic/gin"
-	"github.com/sugarshop/eth-tx-parser/util"
+	"github.com/sugarshop/token-gateway/util"
 )
 
 // ParseFormMiddleware parse form, such as device

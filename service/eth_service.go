@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sugarshop/eth-tx-parser/model"
-	"github.com/sugarshop/eth-tx-parser/remote"
+	"github.com/sugarshop/token-gateway/model"
+	"github.com/sugarshop/token-gateway/remote"
 )
 
 // ETHService ETH Transactions data parser service.
@@ -34,7 +34,7 @@ func ETHServiceInstance() *ETHService {
 			transactions:  map[string][]*model.ETHTransaction{},
 		}
 		ctx := context.Background()
-		dec, err := remote.RPCServiceInstance().ETHBlockDecimalNumber(ctx)
+		dec, err := remote.ETHRPCServiceInstance().ETHBlockDecimalNumber(ctx)
 		if err != nil {
 			log.Panicln(ctx, "[ETHServiceInstance]: Panic, Error ETHBlockDecimalNumber, err: ", err)
 		}
@@ -57,12 +57,12 @@ func ETHServiceInstance() *ETHService {
 
 // GetCurrentBlock get current block.
 func (s *ETHService) GetCurrentBlock(ctx context.Context) (*model.ETHBlockInfo, error) {
-	num, err := remote.RPCServiceInstance().EthBlockNumber(ctx)
+	num, err := remote.ETHRPCServiceInstance().EthBlockNumber(ctx)
 	if err != nil {
 		log.Println(ctx, "[GetCurrentBlock]: Error EthBlockNumber, err: ", err)
 		return nil, err
 	}
-	blockInfo, err := remote.RPCServiceInstance().EthGetBlockByNumber(ctx, num)
+	blockInfo, err := remote.ETHRPCServiceInstance().EthGetBlockByNumber(ctx, num)
 	if err != nil {
 		log.Println(ctx, "[GetCurrentBlock]: Error EthGetBlockByNumber, err: ", err)
 		return nil, err
@@ -94,7 +94,7 @@ func (s *ETHService) GetTransactions(ctx context.Context, address string) ([]*mo
 // load load transactions via address.
 func (s *ETHService) load(ctx context.Context) error {
 	// 1. query new block number.
-	num, err := remote.RPCServiceInstance().ETHBlockDecimalNumber(ctx)
+	num, err := remote.ETHRPCServiceInstance().ETHBlockDecimalNumber(ctx)
 	if err != nil {
 		log.Println(ctx, "[load]: Error EthBlockNumber request:", err)
 		return err
@@ -119,7 +119,7 @@ func (s *ETHService) load(ctx context.Context) error {
 // ParseTransactions parse block transactions.
 func (s *ETHService) ParseTransactions(ctx context.Context, number int64) error {
 	hexStr := fmt.Sprintf("0x%x", number)
-	blockInfo, err := remote.RPCServiceInstance().EthGetBlockByNumber(ctx, hexStr)
+	blockInfo, err := remote.ETHRPCServiceInstance().EthGetBlockByNumber(ctx, hexStr)
 	if err != nil {
 		log.Println(ctx, "[ParseTransactions]: Error EthGetBlockByNumber request:", err)
 		return err
