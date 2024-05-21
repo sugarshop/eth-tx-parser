@@ -8,6 +8,13 @@ spec:
     - host: cxlinks.us
       http:
         paths:
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: coin-gateway-svc
+                port:
+                  number: 8080
           - path: /
             pathType: Prefix
             backend:
