@@ -19,7 +19,7 @@ spec:
           command:
             - /app/bootstrap.sh
             - --conf=/app/config/config.json
-          image: registry.digitalocean.com/francisco/token-gateway:20240521213407
+          image: registry.digitalocean.com/francisco/token-gateway:20240521231755
           resources: {}
           ports:
             - containerPort: 8080

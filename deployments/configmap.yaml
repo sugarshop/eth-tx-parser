@@ -5,5 +5,6 @@ metadata:
 data:
   config.json: |
     {
-        "ENV": "test"
+        "ENV": "test",
+        "ETHJSONRPCURL": "${ETHJSONRPCURL}"
     }
